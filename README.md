@@ -86,3 +86,49 @@ Each `.seq` movie is separated into `.png` images. Each image's filename is cons
 ```
 $ python tests/test_plot_annotations.py
 ```
+
+# Sample Configuration File
+The following gives you an idea on how to configure and run the system. The nice thing about doing it this way is that you don't have to keep passing in parameters through a command line argument. And also you have a record of your hyper-parameters with your data + model all in one place. 
+
+
+```
+# Dataset vars
+dataset_name: "stanford"
+image_width: 640
+image_height: 480
+num_classes: 2
+n_channels: 3
+images_path: "/home/ubuntu/tensorflow_ssd/data/images/"
+
+# SSD config vars
+net: "vgg16"
+default_box_scales:
+  -
+    - 0.0
+    - 0.0
+    - 0.9
+    - 1.5
+  -
+    - 0.2
+    - -0.2
+    - 0.9
+    - 0.8
+feature_maps:
+  -
+    - 5
+    - 4
+  -
+    - 10
+    - 8
+  -
+    - 20
+    - 15
+  -
+    - 40
+    - 30
+neg_pos_ratio: 4
+pred_conf_threshold: 0.8
+num_epochs: 110
+batch_size: 16
+adam_learning_rate: 0.001
+```
