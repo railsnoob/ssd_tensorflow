@@ -51,10 +51,11 @@ This command will use all the meta-data and hyper-parameters in <your_directory>
 ## 6. Testing 
 
 
-# Experimental Results
-I've trained the system with VGG16 using 3000 images from. This took 2 days of running on AWS gpu.large instance. There are still a lot of false positives being created by the system. 
-Training & Validation loss plots over 100 iterations with batch_size=16. 
-
+# Experimental Results So Far
+I've trained the system with VGG16 using 3000 images from the Caltech Pedestrian Detection dataset. This took 2 days of running on AWS gpu.large instance. There are still a lot of false positives being created by the system. 
+Training & Validation loss plots over **100 epochs** with batch_size=16 and 3000 images with at least 1 ground truth box.
+![Loss After 100 EPOCHS](https://raw.githubusercontent.com/railsnoob/ssd_tensorflow/master/docs/ssd_loss.png)
+The plan is to keep training for another 100 epochs.
 
 
 ## Sample Detection
