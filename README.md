@@ -23,9 +23,15 @@ datasets as well and mix & match as necessary.
 # Steps To Run Your Own Experiments
 
 ## 1. Create a directory to hold data & results
+```
+$ mkdir voc_vgg16_1000
+```
 
 ## 2. Create configuration file
 Create a yaml file containing all hyper-parameters and meta-data for the experiment you want to run. Use the template yaml file given in the home directory. You can specify nets, datasets and hyper-parameters.
+```
+$cp ssd_config.tmpl.yaml voc_vgg16_1000/
+```
 
 ## 3. Figure out your feature map sizes
 The core hyperparameter of SSD is the size of the feature maps used. To figure out feature map sizes run the following:
@@ -41,19 +47,18 @@ You can choose from the Pascal VOC2012 dataset or the Stanford Pedestrian detect
 ## 6. Testing 
 
 
-
 # Experimental Results
 I've trained the system with VGG16 using 3000 images from. This took 2 days of running on AWS gpu.large instance. There are still a lot of false positives being created by the system. 
 Training & Validation loss plots over 100 iterations with batch_size=16. 
 
 Possible contributing factors for low accuracy:
-1. Pedestrians occupy a very small space on the 
+1. Pedestrians occupy a very small part of the feature maps. After a few 
 
 # Future Work
-1. Further train the se
-2. Add image augmentation
-3. Run a script to figure out the default box sizes over a larger dataset.
-4. Specific modifications to make 
+1. Further train the VGG16 model with the Stanford Pedestrian dataset for 100 more epochs.
+2. Add image augmentation. Based on empirical results this should increase the accuracy of the model substantially.
+3. Find out the best default box sizes over both datasets.
+4. Add multiple 
 
 ## Average size and shape of pedestrian
 Getting the system to converge on a 
