@@ -39,10 +39,14 @@ Make sure you add this to the yaml file.
 Once this is done, all other hyperparameters derived from this are automatically calculated. 
 
 ## 4. Create your own dataset
-You can choose from the Pascal VOC2012 dataset or the Stanford Pedestrian detection dataset. Change the yaml file accordingly and run "python pre_process.py"
+You can choose from the Pascal VOC2012 dataset or the Stanford Pedestrian detection dataset. Change the yaml file accordingly and run "python pre_process.py". This will create a sample dataset of whatever size you choose and pre_process all images and put them into the project directory. (eg: voc_vgg16_1000)
 
-## 5. Training 
-
+## 5. Training
+After configuring the correct directory name run the following command.
+```
+$ python train.py
+```
+This command will use all the meta-data and hyper-parameters in <your_directory>/ssd_config.yaml and it will create a new directory containing loss and accuracy data every epoch and save the model every 5 epochs. 
 
 ## 6. Testing 
 
@@ -51,17 +55,18 @@ You can choose from the Pascal VOC2012 dataset or the Stanford Pedestrian detect
 I've trained the system with VGG16 using 3000 images from. This took 2 days of running on AWS gpu.large instance. There are still a lot of false positives being created by the system. 
 Training & Validation loss plots over 100 iterations with batch_size=16. 
 
-Possible contributing factors for low accuracy:
-1. Pedestrians occupy a very small part of the feature maps. After a few 
+
+
+## Sample Detection
+![Sample Detection](https://raw.githubusercontent.com/railsnoob/ssd_tensorflow/master/docs/SampleDetections.png)
 
 # Future Work
 1. Further train the VGG16 model with the Stanford Pedestrian dataset for 100 more epochs.
+2. Add accuracy plots for test set.
 2. Add image augmentation. Based on empirical results this should increase the accuracy of the model substantially.
 3. Find out the best default box sizes over both datasets.
-4. Add multiple 
+4. Run forward net in real time.
 
-## Average size and shape of pedestrian
-Getting the system to converge on a 
 
 # Caltech Pedestrian Dataset
 
