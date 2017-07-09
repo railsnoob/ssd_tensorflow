@@ -6,14 +6,20 @@ SSD Implementation
 This is an implementation of [Single Shot MultiBox Detector (SSD)](https://arxiv.org/abs/1512.02325)
 paper for pedestrian detection. 
 
-*This is still very much a work in progress! Presently the model is badly overfitting. :( *
+*This is still very much a work in progress! Presently the model is strongly overfitting. *
+
+# Implementation features
+After seeing many implementations which required you to specify very long command line arguments, I realized that running out of a configuration file was a better way to go. 
+
+Here all meta-data and hyper-parameters are stored in a yaml configuration file. On every run a new output directory is created containig the new model and the configuration file that was used to create it. 
+
+Thus you could automate hyper-parameter search and/or tweak it by hand at any time and you can always go and find what were the exact hyper-parameters values used for a particular model. I.e. you can focus on experimenting and forget about keeping track of long command lines. 
 
 # Datasets
 
-The code supports the VOC2012 dataset and the Caltech Pedestrian
-dataset. 
-The code has been written so you can add  support for your own
-datasets as well and mix & match as necessary. 
+The code supports the VOC2012 dataset and the Caltech Pedestrian dataset. It has been written so you can add  support for your own datasets as well and mix & match as necessary. 
+
+Just implement a class with 2 callbacks to return a traint/test split in a particular form and the string-label to numeric-label mapping.
 
 ## Requirements
 
@@ -29,14 +35,19 @@ datasets as well and mix & match as necessary.
 $ mkdir voc_vgg16_1000
 ```
 
+
 ## 2. Create configuration file
-Create a yaml file containing all hyper-parameters and meta-data for the experiment you want to run. Use the template yaml file given in the home directory. You can specify nets, datasets and hyper-parameters.
+Create a yaml file containing all hyper-parameters and meta-data for the experiment you want to run. Use the template yaml file given in the home directory. You can specify nets, datasets and hyper-parameters (size of default boxes, feature_map sizes etc).
 ```
-$cp ssd_config.tmpl.yaml voc_vgg16_1000/
+$ cp ssd_config.tmpl.yaml voc_vgg16_1000/
 ```
+And then edit the file as necessary. 
 
 ## 3. Figure out your feature map sizes
-The core hyperparameter of SSD is the size of the feature maps used. To figure out feature map sizes run the following:
+The core hyperparameter of SSD is the size of the feature maps used. To figure out feature map sizes do the following:
+```
+$ 
+```
 Make sure you add this to the yaml file. 
 Once this is done, all other hyperparameters derived from this are automatically calculated. 
 
