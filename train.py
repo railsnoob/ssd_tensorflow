@@ -186,11 +186,7 @@ class SSDTrain:
         optimizer = tf.train.AdamOptimizer() # TODO allow changing initial learning_rate value
         training_operation = optimizer.minimize(total_loss)
         saver =  tf.train.Saver()
-        tf.add_to_collection("x", x)
-        tf.add_to_collection("y_predict_loc", y_predict_loc)
-        tf.add_to_collection("y_predict_conf", y_predict_conf)
-        tf.add_to_collection("y_predict_loc1", y_predict_loc1)
-        tf.add_to_collection("y_predict_conf1", y_predict_conf1)
+        
         
         debug_stats = { "Conf-Loss-Before-Reduce-Sum" : Lconf2,
                         "dbg_num_conf_mask": dbg_num_conf_mask,
@@ -263,11 +259,11 @@ class SSDTrain:
         dirname = self.cfg.g("dirname")
         ## INITIALIZATION
         x                = tf.placeholder(tf.float32,(None, cfg.g("image_height"),
-                                                      cfg.g("image_width"), cfg.g("n_channels")))
-        y_loc            = tf.placeholder(tf.float32,(None,cfg.g("num_loc")))
-        y_conf           = tf.placeholder(tf.int32,(None,cfg.g("num_conf")))
-        num_matched      = tf.placeholder(tf.int32,(None,1))
-        y_conf_loss_mask = tf.placeholder(tf.int32,(None,cfg.g("num_conf")))
+                                                      cfg.g("image_width"), cfg.g("n_channels")),name="x")
+        y_loc            = tf.placeholder(tf.float32,(None,cfg.g("num_loc")),name="y_loc")
+        y_conf           = tf.placeholder(tf.int32,(None,cfg.g("num_conf")),name="y_conf")
+        num_matched      = tf.placeholder(tf.int32,(None,1),name="num_matched")
+        y_conf_loss_mask = tf.placeholder(tf.int32,(None,cfg.g("num_conf")),name="y_conf_loss_mask")
 
         saver, debug_stats, total_loss, training_operation = self._ssd_graph(x,y_loc,y_conf,num_matched,y_conf_loss_mask)
         

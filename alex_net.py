@@ -48,13 +48,12 @@ class AlexNet(BaseNet):
         
         print("\n   >>>>> FEATURE MAP 4:",x)
         self.convolve_and_collect(x,"conv13_collect",y_predict_box_coords,y_predict_class)
-
         
         print("ALEX Size OF BOX COORD PREDICT:",len(y_predict_box_coords))
         print("ALEX Size OF CLASSES CREDIT:",len(y_predict_class))
         
-        y_predict_box_flat = tf.concat(y_predict_box_coords,1)
-        y_predict_class_flat = tf.concat(y_predict_class,1)
+        y_predict_box_flat = tf.concat(y_predict_box_coords,1,name="y_predict_loc")
+        y_predict_class_flat = tf.concat(y_predict_class,1,name="y_predict_conf")
         
         print("ALEX FLAT BOX COORD PREDICT:", y_predict_box_flat)
         print("ALEX FLAT OF CLASSES CREDIT:", y_predict_class_flat)

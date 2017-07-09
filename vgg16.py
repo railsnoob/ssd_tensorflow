@@ -74,8 +74,8 @@ class VGG16(BaseNet):
         print("Size OF BOX COORD PREDICT:",len(y_predict_box_coords))
         print("Size OF CLASSES CREDIT:",len(y_predict_class))
         
-        y_predict_box_flat = tf.concat(y_predict_box_coords,1)
-        y_predict_class_flat = tf.concat(y_predict_class,1)
+        y_predict_box_flat = tf.concat(y_predict_box_coords,1,name="y_predict_loc")
+        y_predict_class_flat = tf.concat(y_predict_class,1,name="y_predict_conf")
         
         print("FLAT BOX COORD PREDICT:", y_predict_box_flat)
         print("FLAT OF CLASSES CREDIT:", y_predict_class_flat)
