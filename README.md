@@ -51,14 +51,15 @@ This command will use all the meta-data and hyper-parameters in <your_directory>
 ## 6. Testing 
 
 
-# Experimental Results
-I've trained the system with VGG16 using 3000 images from. This took 2 days of running on AWS gpu.large instance. There are still a lot of false positives being created by the system. 
-Training & Validation loss plots over 100 iterations with batch_size=16. 
-
+# Experimental Results So Far
+I've trained the system with VGG16 using 3000 images from the Caltech Pedestrian Detection dataset. This took 2 days of running on AWS gpu.large instance. There are still a lot of false positives being created by the system. 
+Training & Validation loss plots over **100 epochs** with batch_size=16 and 3000 images with at least 1 ground truth box.
+![Loss After 100 EPOCHS](https://raw.githubusercontent.com/railsnoob/ssd_tensorflow/master/docs/ssd_loss.png)
+The plan is to keep training for another 100 epochs.
 
 
 ## Sample Detection
-![Sample Detection](https://raw.githubusercontent.com/railsnoob/ssd_tensorflow/master/docs/SampleDetections.png)
+
 
 # Future Work
 1. Further train the VGG16 model with the Stanford Pedestrian dataset for 100 more epochs.
@@ -84,4 +85,50 @@ Each `.seq` movie is separated into `.png` images. Each image's filename is cons
 
 ```
 $ python tests/test_plot_annotations.py
+```
+
+# Sample Configuration File
+The following gives you an idea on how to configure and run the system. The nice thing about doing it this way is that you don't have to keep passing in parameters through a command line argument. And also you have a record of your hyper-parameters with your data + model all in one place. 
+
+
+```
+# Dataset vars
+dataset_name: "stanford"
+image_width: 640
+image_height: 480
+num_classes: 2
+n_channels: 3
+images_path: "/home/ubuntu/tensorflow_ssd/data/images/"
+
+# SSD config vars
+net: "vgg16"
+default_box_scales:
+  -
+    - 0.0
+    - 0.0
+    - 0.9
+    - 1.5
+  -
+    - 0.2
+    - -0.2
+    - 0.9
+    - 0.8
+feature_maps:
+  -
+    - 5
+    - 4
+  -
+    - 10
+    - 8
+  -
+    - 20
+    - 15
+  -
+    - 40
+    - 30
+neg_pos_ratio: 4
+pred_conf_threshold: 0.8
+num_epochs: 110
+batch_size: 16
+adam_learning_rate: 0.001
 ```
