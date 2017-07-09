@@ -46,30 +46,57 @@ And then edit the file as necessary.
 ## 3. Figure out your feature map sizes
 The core hyperparameter of SSD is the size of the feature maps used. To figure out feature map sizes do the following:
 ```
-$ 
+python train.py <directory-containing-configuration-yaml-file>
+for example:
+$ python train.py /Users/vivek/work/ssd-code/tiny_voc
 ```
-Make sure you add this to the yaml file. 
+Make sure you change the feature maps in the configuration file. (TODO: automate this!) 
 Once this is done, all other hyperparameters derived from this are automatically calculated. 
 
 ## 4. Create your own dataset
-You can choose from the Pascal VOC2012 dataset or the Stanford Pedestrian detection dataset. Change the yaml file accordingly and run "python pre_process.py". This will create a sample dataset of whatever size you choose and pre_process all images and put them into the project directory. (eg: voc_vgg16_1000)
+You can choose from the Pascal VOC2012 dataset or the Stanford Pedestrian detection dataset. Change the yaml file accordingly and run:
+
+```
+$ python pre_process.py 
+Usage:
+pre_process.py <directory-containing-configuration-yaml-file> <dataset-name> <dataset-directory> <number-of-images>
+Example:
+pre_process.py ./tiny_voc voc2012 voc-data/VOC2012 10
+```
+
+This will create a sample dataset of whatever size you choose and pre_process all images and put them into the project directory. (eg: voc_vgg16_1000)
 
 ## 5. Training
-After configuring the correct directory name run the following command.
+After configuring the correct directory name run **python train.py dirname**
 ```
-$ python train.py
+Usage:
+train.py <directory-containing-configuration-yaml-file>
+Example:
+train.py /Users/vivek/work/ssd-code/tiny_voc
 ```
 This command will use all the meta-data and hyper-parameters in <your_directory>/ssd_config.yaml and it will create a new directory containing loss and accuracy data every epoch and save the model every 5 epochs. 
 
-## 6. Testing 
+
+During training a new directory will be created inside your main directory containing a copy of the configuration file. The model is timestamped every 5 EPOCHS. 
+
+## 6. Inference
+To run inference using any of the models saved do the following:
+```
+Usage:
+inference.py <directory-containing-configuration-yaml-file> <model-name-relative-to-directory>
+Example:
+inference.py /Users/vivek/work/ssd-code/tiny_voc Jul_05_161614_O3K2T/final-model
+```
+
+The inference class will pull an image from your test set and show you a prediction. 
 
 
 # Experimental Results So Far
 I've trained the system with VGG16 using 3000 images from the Caltech Pedestrian Detection dataset. This took 2 days of running on AWS gpu.large instance. There are still a lot of false positives being created by the system. 
+
 Training & Validation loss plots over **100 epochs** with batch_size=16 and 3000 images with at least 1 ground truth box.
 ![Loss After 100 EPOCHS](https://raw.githubusercontent.com/railsnoob/ssd_tensorflow/master/docs/ssd_loss.png)
 The plan is to keep training for another 100 epochs.
-
 
 ## Sample Detection
 ![Sample Detection](https://raw.githubusercontent.com/railsnoob/ssd_tensorflow/master/docs/working-prediction.png)
