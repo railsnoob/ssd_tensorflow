@@ -98,7 +98,7 @@ class Inference:
             
             # y_pred_conf1 = tf.get_collection("y_predict_conf1")[0]
             # y_pred_loc1  = tf.get_collection("y_predict_loc1")[0]
-            x            = tf.get_collection("x")[0]
+            # x            = tf.get_collection("x")[0]
     
             img          = mpimg.imread(self.cfg.g("images_path")+"/" +image_name)
             
