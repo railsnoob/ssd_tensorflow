@@ -4,7 +4,9 @@ SSD Implementation
 # Overview
 
 This is an implementation of [Single Shot MultiBox Detector (SSD)](https://arxiv.org/abs/1512.02325)
-paper for pedestrian detection. *This is still very much a work in progress.*
+paper for pedestrian detection. 
+
+*This is still very much a work in progress! Presently the model is badly overfitting. :( *
 
 # Datasets
 
@@ -59,7 +61,7 @@ The plan is to keep training for another 100 epochs.
 
 
 ## Sample Detection
-
+![Sample Detection](https://raw.githubusercontent.com/railsnoob/ssd_tensorflow/master/docs/working-prediction.png)
 
 # Future Work
 1. Further train the VGG16 model with the Stanford Pedestrian dataset for 100 more epochs.
