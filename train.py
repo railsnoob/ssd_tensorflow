@@ -1,4 +1,3 @@
-
 import sys
 import numpy as np
 import tensorflow as tf
@@ -26,7 +25,7 @@ class SSDTrain:
         self.dirname = dirname
         self._net    = NetFactory.get_net(self.cfg.g("net"))(num_default_boxes= self.cfg.g("num_default_boxes"),
                                                              num_classes= self.cfg.g("num_classes"))
-        print("Using NET={} DATASET={}".format(self.cfg.g("net"),self.cfg.g("dataset")))
+        print("Using NET={} DATASET={}".format(self.cfg.g("net"),self.cfg.g("dataset_name")))
         
 
     def _get_yconf_mask(self, y_conf, y_loc, n_matched):
@@ -363,8 +362,21 @@ if __name__ == "__main__":
     # train_dataset("/Users/vivek/work/ssd-code/tiny",1 )
     # vgg = SSDTrain("/Users/vivek/work/ssd-code/tiny")
     # vgg.debug_train_setup()
+    # "/Users/vivek/work/ssd-code/tiny_voc"
+    
+    if (len(sys.argv) < 2 ):
+        print("Please supply a directory name contraining a configuration file.")
+        print("Usage:")
+        print("{} <directory-containing-configuration-yaml-file>".format(sys.argv[0]))
+        print("Example:")
+        print("{} {}".format(sys.argv[0],"/Users/vivek/work/ssd-code/tiny_voc"))
+        sys.exit()
 
-    voc_alex_net = SSDTrain("/Users/vivek/work/ssd-code/tiny_voc")
-    voc_alex_net.train_the_net()
+    print(sys.argv)
+    dirname = sys.argv[1]
+        
+    train_net = SSDTrain(dirname)
+    
+    train_net.train_the_net()
 
     

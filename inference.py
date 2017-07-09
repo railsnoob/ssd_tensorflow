@@ -73,8 +73,6 @@ class Inference:
     # accuracy
     # Run through feed-forward
     # Calculate the number of boxes > threshold versus number of false 
-    # accuracy 
-    # find hte number
     # correct_pred = tf.equal(tf.argmax(logits, 1), tf.argmax(y, 1))
     # accuracy_conf = tf.reduce_mean(tf.cast(correct_pred, tf.float32), name='accuracy_conf')
     # accuracy_loc = # calculate the number thats 50% sized coverage.
@@ -191,5 +189,13 @@ class Inference:
         plt.show()
 
 if __name__ == "__main__":
-    inf = Inference("/Users/vivek/work/ssd-code/tiny_voc")
-    inf.predict_boxes("Jul_05_161614_O3K2T/final-model") # To Add "test","trained-model")
+    if (len(sys.argv) < 3 ):
+        print("Please supply a directory name contraining a configuration file.")
+        print("Usage:")
+        print("{} <directory-containing-configuration-yaml-file> <model-name-relative-to-directory>".format(sys.argv[0]))
+        print("Example:")
+        print("{} {} {}".format(sys.argv[0],"/Users/vivek/work/ssd-code/tiny_voc","Jul_05_161614_O3K2T/final-model"))
+        sys.exit()
+        
+    inf = Inference(sys.argv[1])
+    inf.predict_boxes(sys.argv[2]) # TODO: find the last model by default
