@@ -19,7 +19,7 @@ class Inference:
         self.dirname = dirname
         self.cfg = SSDConfig(dirname)
     
-    def get_box_lefttop_and_rightbottom(center_x,center_y,w,h):
+    def get_box_lefttop_and_rightbottom(self, center_x,center_y,w,h):
         """ Calculates the left_top and right_bottom coordinates as required by cv2 to plot box.
         Args: center x,y coordinates , width & height
         Returns: left_top & right_bottom coordinates as arrays
@@ -49,7 +49,7 @@ class Inference:
         box_w        = np.exp(norm_box[2])*dbox_width
         box_h        = np.exp(norm_box[3])*dbox_height
 
-        return get_box_lefttop_and_rightbottom(box_center_x,box_center_y,box_w,box_h)
+        return self.get_box_lefttop_and_rightbottom(box_center_x,box_center_y,box_w,box_h)
 
 
     def convert_coordinates_to_boxes(self,loc,conf,probs):
@@ -79,33 +79,54 @@ class Inference:
     # accuracy_conf = tf.reduce_mean(tf.cast(correct_pred, tf.float32), name='accuracy_conf')
     # accuracy_loc = # calculate the number thats 50% sized coverage.
         
-    def run_inference(self,image_name):
+    def run_inference(self,image_name, model_name="trained-model"):
     
         with tf.Graph().as_default(), tf.Session() as predict_sess:
-            saver        = tf.train.import_meta_graph(self.dirname + "/trained-model.meta")
-            saver.restore(predict_sess,self.dirname + "/trained-model")
+            saver = tf.train.import_meta_graph(self.dirname + "/" + model_name + ".meta")
+            saver.restore(predict_sess,self.dirname + "/" + model_name)
 
-            y_pred_conf  = tf.get_collection("y_predict_conf")[0]
-            y_pred_loc   = tf.get_collection("y_predict_loc")[0]
+            # y_pred_conf  = tf.get_collection("y_predict_conf")[0]
+            # y_pred_loc   = tf.get_collection("y_predict_loc")[0]
+
+            # y_pred_conf = tf.get_default_graph().get_tensor_by_name("y_predict_conf:0")
+            # y_pred_loc = tf.get_default_graph().get_tensor_by_name("y_predict_loc:0")
+            tensors = [n.name for n in tf.get_default_graph().as_graph_def().node ]
+            print(tensors)
         
+            # block1_conv1 = tf.get_default_graph().get_tensor_by_name("block1_conv1:0")
+            x            = tf.get_default_graph().get_tensor_by_name("Placeholder:0")
+            y_pred_conf  = tf.get_default_graph().get_tensor_by_name("concat_1:0")
+            y_pred_loc   = tf.get_default_graph().get_tensor_by_name("concat:0")
+            
             y_pred_conf1 = tf.get_collection("y_predict_conf1")[0]
             y_pred_loc1  = tf.get_collection("y_predict_loc1")[0]
             x            = tf.get_collection("x")[0]
     
-            img          = mpimg.imread(images_path+"/" +image_name)
+            img          = mpimg.imread(self.cfg.g("images_path")+"/" +image_name)
+            
+            if img.shape[0] != self.cfg.g("image_height") or img.shape[1] != self.cfg.g("image_width"):
+                img      = cv.resize(img,(self.cfg.g("image_height"),self.cfg.g("image_width")))
+                
             img          = (img-128)/128
 
             print("run_inference():imp.shape=",img.shape)
         
-            batched_img         = np.reshape(img, [-1,480,640,3])
+            batched_img         = np.reshape(img, [-1,self.cfg.g("image_height"),self.cfg.g("image_width"),self.cfg.g("n_channels")])
             fdict               = {x:batched_img}
 
-            all_probabilities   = tf.nn.softmax(y_pred_conf[0])
+            y_pred_conf_tmp     = tf.reshape(y_pred_conf,[-1,self.cfg.g("num_preds"),2])
+            all_probabilities   = tf.nn.softmax(y_pred_conf_tmp)
             probs1, preds_conf1 = tf.nn.top_k(all_probabilities)
 
+            print("PROBS1",probs1)
+            print("PREDS_CONF1",preds_conf1)
+            
             probs               = tf.reshape(probs1,[-1,self.cfg.g("num_preds")])
             preds_conf          = tf.reshape(preds_conf1,[-1,self.cfg.g("num_preds")])
-    
+            
+            print("PREDS_CONF", preds_conf)
+            print("Y_PRED_LOC", y_pred_loc)
+            
             predicted_conf, predicted_loc, predicted_probs,y_p_conf_out,probs1_out, preds_conf1_out,ypc1,ypl1 = predict_sess.run([preds_conf,\
                                     y_pred_loc,\
                                     probs,\
@@ -127,13 +148,13 @@ class Inference:
     
         return predicted_conf, predicted_loc, predicted_probs
 
-    def debug_draw_boxes(img, boxes ,color, thick):
+    def debug_draw_boxes(self, img, boxes ,color, thick):
         for box in boxes:
             pts = [int(v) for v in box]
             cv.rectangle(img,(pts[0],pts[1]),(pts[2],pts[3]),color,thick)
+
         
-    
-    def predict_boxes(self):
+    def predict_boxes(self,model_name="trained-model"):
         """ Given a directory containing the dataset and images_path show objects detected for
         a random image.
 
@@ -141,13 +162,13 @@ class Inference:
         Returns - Nothing. Shows the pic with detections.
     
         """ 
-        images_path            = cfg.g("images_path")
+        images_path            = self.cfg.g("images_path")
     
-        train_imgs             = pickle.load(open(dirname+"/train.pkl","rb"))
+        train_imgs             = pickle.load(open(self.dirname+"/train.pkl","rb"))
         
         image_info             = random.choice(list(train_imgs))
         image_name             = image_info['img_name']
-        p_conf, p_loc, p_probs = self.run_inference(image_name,dirname,images_path)
+        p_conf, p_loc, p_probs = self.run_inference(image_name,model_name)
         non_zero_indices       = np.where(p_conf > 0)[1]
 
         # DEBUGGING
@@ -160,10 +181,15 @@ class Inference:
         print("BOXES=",boxes)
     
         boxes = non_max_suppression_fast(boxes,0.3)
+        
         img   = mpimg.imread(images_path+"/"+image_name)
     
-        img = self.debug_draw_boxes(img,boxes,(0,255,0),2)
+        self.debug_draw_boxes(img,boxes,(0,255,0),2)
     
-        plt.figure(figsize=(16,16))
+        plt.figure(figsize=(8,8))
         plt.imshow(img)
         plt.show()
+
+if __name__ == "__main__":
+    inf = Inference("/Users/vivek/work/ssd-code/tiny_voc")
+    inf.predict_boxes("Jul_05_161614_O3K2T/final-model") # To Add "test","trained-model")

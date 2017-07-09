@@ -91,7 +91,7 @@ class SSDTrain:
         for i,m in enumerate(data[start:end]):
             img            = self._get_image(images_path+"/"+m['img_name'])
 
-            if img[0] != self.cfg.g("image_height") or img[1] != self.cfg.g("image_width"):
+            if img.shape[0] != self.cfg.g("image_height") or img.shape[1] != self.cfg.g("image_width"):
                 img            = cv.resize(img,(self.cfg.g("image_height"),self.cfg.g("image_width")))
                 
             X_train[i]     = img
