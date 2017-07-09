@@ -92,12 +92,12 @@ class Inference:
             print(tensors)
         
             # block1_conv1 = tf.get_default_graph().get_tensor_by_name("block1_conv1:0")
-            x            = tf.get_default_graph().get_tensor_by_name("Placeholder:0")
-            y_pred_conf  = tf.get_default_graph().get_tensor_by_name("concat_1:0")
-            y_pred_loc   = tf.get_default_graph().get_tensor_by_name("concat:0")
+            x            = tf.get_default_graph().get_tensor_by_name("x:0")
+            y_pred_conf  = tf.get_default_graph().get_tensor_by_name("y_predict_conf:0")
+            y_pred_loc   = tf.get_default_graph().get_tensor_by_name("y_predict_loc:0")
             
-            y_pred_conf1 = tf.get_collection("y_predict_conf1")[0]
-            y_pred_loc1  = tf.get_collection("y_predict_loc1")[0]
+            # y_pred_conf1 = tf.get_collection("y_predict_conf1")[0]
+            # y_pred_loc1  = tf.get_collection("y_predict_loc1")[0]
             x            = tf.get_collection("x")[0]
     
             img          = mpimg.imread(self.cfg.g("images_path")+"/" +image_name)
@@ -125,18 +125,17 @@ class Inference:
             print("PREDS_CONF", preds_conf)
             print("Y_PRED_LOC", y_pred_loc)
             
-            predicted_conf, predicted_loc, predicted_probs,y_p_conf_out,probs1_out, preds_conf1_out,ypc1,ypl1 = predict_sess.run([preds_conf,\
+            predicted_conf, predicted_loc, predicted_probs,y_p_conf_out,probs1_out, preds_conf1_out= predict_sess.run([preds_conf,\
                                     y_pred_loc,\
                                     probs,\
                                     y_pred_conf,\
                                     probs1,\
-                                    preds_conf1,y_pred_conf1,y_pred_loc1],feed_dict=fdict)
+                                    preds_conf1],feed_dict=fdict)
                                     
         # DEBUG OUTPUT
         print("y_p_conf_out.shape",y_p_conf_out.shape)
         print_stats2(y_p_conf_out,"y_pred_conf")
         print_stats2(preds_conf1_out,"preds_conf1")
-        print("ypl1 ypc1",ypl1.shape,ypc1.shape)
         print("probs1.shape",probs1.shape)
         print("y_pred_loc ",predicted_loc.shape)
         print("y_pred_conf ",predicted_conf.shape)    
