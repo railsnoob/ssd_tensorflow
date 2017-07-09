@@ -172,3 +172,40 @@ num_epochs: 110
 batch_size: 16
 adam_learning_rate: 0.001
 ```
+
+## TODOS
+
+1. [DONE] Pre Process the data
+2. [DONE] Create the base network.
+	1. [DONE] Create the base network.
+	2. [DONE] Base network should send out to final predctions a class predction (1-hot encoded) and a location prediction (a,b,c,d) relative sizes.
+	3. [DONE] Figure out which layers will output detections to prediction array.
+	4. [DONE] Figure out the size of the feature maps in each case above.
+	5. [DONE ] Figure out number of outputs in final array
+3. Preprocess
+	1. [DONE] Create a function to pull a image and its data
+	2. [DONE] create a hash of Ground truth image -> bounding box, class
+	3. [DONE] Create the default box sizes.
+	4. [DONE] For each feature map square, create the different default boxes.
+		1. For each default box
+			1. See if it matches with the ground truth.
+				1. YES - then set class value to 1 (pedestrian)
+				2. NO - set class value to 0 (background)
+			2. Calculate how much negative boxes are created. If too many ( greater than 2/3 ratio) then drop from training set.
+			3. Create a list of [y_box_coords, y_confidence (1-hot encoded class),]
+4. [DONE] Create one prediction through the network.
+6. [DONE] Loss should be cross-entropy for the class predictions and mse for the coordinates.
+7. [DONE] Change input size of the image to match Pedestrian dataset.
+8. [DONE] Train the system on pedestrian dataset.
+9. [DONE] Add Alex Net
+10. [DONE] Add support for PASCAL VOC person dataset.
+9. Experiment with different feature map sizes (skinny is better I think.)
+10. [DONE] Run predictions from test set to show system is working.
+11. Experiment with different sizes to see if it varies the accuracy. Randomized grid search?
+12. Can I load the imagenet weights into the system ?
+13. Realtime predictions
+14. Data Augmenation
+	1. Use the entire orignal input image
+	2. Sample a patch so that the mininmum jaccard overlap with the object is 0.1,0.3,0.5,0.7,0.9
+	3. Randomly Sample a patch.
+	4. This new image needs to be run through the same pipeline.
