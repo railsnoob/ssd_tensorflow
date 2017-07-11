@@ -311,8 +311,7 @@ class SSDTrain:
                     epoch_train_losses.append(train_loss)
                     self.debug_output_vars(debug_out,train_loss,y_batch_loc,y_batch_conf,y_conf_mask) 
 
-                    print("EPOCH[",epoch_i,"] offset=[",offset,"] train_loss=",train_loss)
-
+                    print("EPOCH[",epoch_i,"] offset=[",offset,"] batch_size=[",batch_size,"] train_loss=",train_loss)
 
                     if (offset//batch_size) % 5 == 0:
                         summary_str = total_loss_summary.eval(feed_dict={x:X_batch,
@@ -345,6 +344,7 @@ class SSDTrain:
                                                                                  str(epoch_i)))
 
             saver.save(sess,cfg.g("run_dir")+"/final-model")
+            file_writer.close()
 
             
 
