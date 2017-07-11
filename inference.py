@@ -168,11 +168,14 @@ class Inference:
             print(i,") location",p_loc[0][i*4:i*4+4],"probs", p_probs[0][i],"conf",p_conf[0][i])
     
         boxes, confs = self.convert_coordinates_to_boxes(p_loc,p_conf,p_probs)
-        print("Boxes")
+        print("Boxes BEFORE NMS")
         for i,a in enumerate(zip(boxes,confs)):
             print i,a
     
         boxes = non_max_suppression_fast(boxes,0.3)
+
+        print("Boxes AFTER NMS")
+        print(boxes)
         
         img   = mpimg.imread(images_path+"/"+image_name)
     
