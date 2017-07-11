@@ -36,7 +36,7 @@ class BaseNet:
         
         num_channels = int(x_tensor.shape[-1])
     
-        filter_weight = tf.Variable(tf.truncated_normal(list(n_ksize)+[num_channels,n_outputs],mean=0,stddev=0.001))
+        filter_weight = tf.Variable(tf.truncated_normal(list(n_ksize)+[num_channels,n_outputs],mean=0,stddev=0.01))
         filter_bias = tf.Variable(tf.zeros(n_outputs))
     
         conv_layer = tf.nn.conv2d(x_tensor,filter_weight,[1]+list(n_strides)+[1],padding_type,name=name)
@@ -64,7 +64,7 @@ class BaseNet:
 
     def fully_conn(self, x_tensor,num_outputs):
         num_inputs = int(x_tensor.shape[1])
-        weight= tf.Variable(tf.random_normal([num_inputs,num_outputs],mean=0,stddev=0.001))
+        weight= tf.Variable(tf.random_normal([num_inputs,num_outputs],mean=0,stddev=0.01))
         bias = tf.Variable(tf.zeros(shape=num_outputs))
     
         layer = tf.add(tf.matmul(x_tensor,weight),bias)
