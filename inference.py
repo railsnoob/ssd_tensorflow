@@ -170,7 +170,7 @@ class Inference:
         boxes, confs = self.convert_coordinates_to_boxes(p_loc,p_conf,p_probs)
         print("Boxes BEFORE NMS")
         for i,a in enumerate(zip(boxes,confs)):
-            print i,a
+            print(i,a)
     
         boxes = non_max_suppression_fast(boxes,0.3)
 
