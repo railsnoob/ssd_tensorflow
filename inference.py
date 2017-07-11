@@ -76,6 +76,10 @@ class Inference:
     # correct_pred = tf.equal(tf.argmax(logits, 1), tf.argmax(y, 1))
     # accuracy_conf = tf.reduce_mean(tf.cast(correct_pred, tf.float32), name='accuracy_conf')
     # accuracy_loc = # calculate the number thats 50% sized coverage.
+
+    def _dump_tensors(self):
+        tensors = [n.name for n in tf.get_default_graph().as_graph_def().node ]
+        print(tensors)
         
     def run_inference(self,image_name, model_name="trained-model"):
     
@@ -83,22 +87,9 @@ class Inference:
             saver = tf.train.import_meta_graph(self.dirname + "/" + model_name + ".meta")
             saver.restore(predict_sess,self.dirname + "/" + model_name)
 
-            # y_pred_conf  = tf.get_collection("y_predict_conf")[0]
-            # y_pred_loc   = tf.get_collection("y_predict_loc")[0]
-
-            # y_pred_conf = tf.get_default_graph().get_tensor_by_name("y_predict_conf:0")
-            # y_pred_loc = tf.get_default_graph().get_tensor_by_name("y_predict_loc:0")
-            tensors = [n.name for n in tf.get_default_graph().as_graph_def().node ]
-            print(tensors)
-        
-            # block1_conv1 = tf.get_default_graph().get_tensor_by_name("block1_conv1:0")
             x            = tf.get_default_graph().get_tensor_by_name("x:0")
             y_pred_conf  = tf.get_default_graph().get_tensor_by_name("y_predict_conf:0")
             y_pred_loc   = tf.get_default_graph().get_tensor_by_name("y_predict_loc:0")
-            
-            # y_pred_conf1 = tf.get_collection("y_predict_conf1")[0]
-            # y_pred_loc1  = tf.get_collection("y_predict_loc1")[0]
-            # x            = tf.get_collection("x")[0]
     
             img          = mpimg.imread(self.cfg.g("images_path")+"/" +image_name)
             
@@ -147,7 +138,7 @@ class Inference:
 
     def debug_draw_boxes(self, img, boxes ,color, thick):
         for box in boxes:
-            pts = [int(v) for v in box]
+            pts = [ max(0,int(v)) for v in box]
             cv.rectangle(img,(pts[0],pts[1]),(pts[2],pts[3]),color,thick)
 
         

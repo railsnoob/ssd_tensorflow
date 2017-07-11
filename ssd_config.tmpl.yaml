@@ -5,7 +5,7 @@ image_height: 480
 num_classes: 2
 n_channels: 3
 images_path: "/home/ubuntu/tensorflow_ssd/data/images/"
-
+tensorboard_batch_log_period: 5
 # SSD config vars
 net: "vgg16"
 default_box_scales:

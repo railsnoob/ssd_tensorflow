@@ -30,7 +30,7 @@ class SSDTrain:
 
     def _get_yconf_mask(self, y_conf, y_loc, n_matched):
         """
-        We only use neg_post_ratio times the number of positive gt matches.
+        We only use neg_pos_ratio times the number of positive gt matches.
         This is not needed for y_loc as y_loc losses are only for matched default boxes that match ground_truth box
         yconf_mask will contain a 1 for a data point that we will use and 0 for one that we will not. 
         Args
@@ -157,21 +157,18 @@ class SSDTrain:
         y_predict_conf = tf.reshape(y_predict_conf,[-1,self.cfg.g("num_preds"),self.cfg.g("num_classes")])
         print("  predict_conf.shape & y_conf.shape ",y_predict_conf.shape, y_conf.shape)
         
-        Lconf = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=y_predict_conf, labels=y_conf)
-        Lconf2 = y_conf_loss_mask * Lconf
-        Lconf = tf.reduce_sum(Lconf2)
+        cross_entropy_with_logits = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=y_predict_conf, labels=y_conf)
+        conf_loss_arr = y_conf_loss_mask * cross_entropy_with_logits
+        Lconf = tf.reduce_sum(conf_loss_arr)
         y_conf_1_column = y_conf
 
         print("num_matched size, NUM_LOC, NUM_CONF ====",num_matched,self.cfg.g("num_loc"),self.cfg.g("num_conf"))
     
-        # Take the confidence matrix and convert it into 1s and 0s representing whether we should zero out the box locations or not. 
+        # Take the confidence matrix and convert it into 1s and 0s
+        # representing whether we should zero out the box locations or not. 
         matching_box_present_mask = np.array([])    
         matching_box_present_mask = tf.minimum(y_conf,1)
         matching_box_present_mask = tf.concat([y_conf,y_conf,y_conf,y_conf],1)
-        print("y_predict_conf",y_conf.shape[1])
-        print(matching_box_present_mask)
-        # matching_box_present_mask = tf.reshape(matching_box_present_mask,[-1,y_predict_conf.shape[1]*4])
-        
         matching_box_present_mask = tf.cast(matching_box_present_mask,tf.float32)
 
         print("matching_box_present_mask shape ====", matching_box_present_mask.shape,"y_loc.shape shape ====", matching_box_present_mask.shape)
@@ -182,13 +179,14 @@ class SSDTrain:
         Lbox_coords = tf.multiply(matching_box_present_mask, Lbox_coords) # Y_conf will already be zero
         Lbox_coords_before_sum = Lbox_coords # should have same coordinates as y_conf and n*4 non zero values
         Lbox_coords = tf.reduce_sum(Lbox_coords)
-        # total_loss = (1/num_matched[0])*Lbox_coords + Lconf
         total_loss = 10*Lbox_coords + 1/10*Lconf
-        optimizer = tf.train.AdamOptimizer() # TODO allow changing initial learning_rate value
+        optimizer = tf.train.AdamOptimizer(learning_rate=self.cfg.g("adam_learning_rate")) 
         training_operation = optimizer.minimize(total_loss)
+        
         saver =  tf.train.Saver()
         
-        debug_stats = { "Conf-Loss-Before-Reduce-Sum" : Lconf2,
+        debug_stats = { "cross_entropy_with_logits": cross_entropy_with_logits,
+                        "Conf-Loss-Before-Reduce-Sum" : conf_loss_arr,
                         "dbg_num_loc": dbg_num_loc,
                         "Lbox_coords_before_sum":Lbox_coords_before_sum,
                         "box_mask": matching_box_present_mask,
@@ -311,9 +309,9 @@ class SSDTrain:
                     epoch_train_losses.append(train_loss)
                     self.debug_output_vars(debug_out,train_loss,y_batch_loc,y_batch_conf,y_conf_mask) 
 
-                    print("EPOCH[",epoch_i,"] offset=[",offset,"] batch_size=[",batch_size,"] train_loss=",train_loss)
+                    print("EPOCH[",epoch_i,"] index=[",offset//batch_size,"] offset=[",offset,"] batch_size=[",batch_size,"] train_loss=",train_loss)
 
-                    if (offset//batch_size) % 5 == 0:
+                    if (offset//batch_size) % self.cfg.g("tensorboard_batch_log_period") == 0:
                         summary_str = total_loss_summary.eval(feed_dict={x:X_batch,
                                                                     y_conf:y_batch_conf,
                                                                     y_loc:y_batch_loc,
@@ -329,7 +327,6 @@ class SSDTrain:
                     
                 epoch_train_loss = np.mean(epoch_train_losses)
                 all_training_losses.append([epoch_i,epoch_train_loss])
-                
                 pickle.dump(all_training_losses, open(cfg.g("run_dir")+"/train_losses_till_epoch-"+str(epoch_i),"wb"))
 
                 if (epoch_i % 5 == 0):
