@@ -202,7 +202,7 @@ class SSDPreProcess:
         glist       = self.dataset.get_train_test_splits()
         
         # train + val sets from the same training set without replacement
-        total_train = n + n//5
+        total_train = n + max(n//5,1)
         # test from a separate set
         total_test  = n
     
@@ -212,7 +212,7 @@ class SSDPreProcess:
         train_items = list(all_train.items())
     
         train       = dict(train_items[ 0 : n ])
-        val         = dict(train_items[ n : (n + n//5)])
+        val         = dict(train_items[ n : (n + max(n//5,1))])
         test        = dict((a,glist["test"][a]) for a in random.sample(list(glist["test"].keys()),total_test))
         
         self.pre_process_and_write_images(train,self.cfg.g("dirname"),"train")
