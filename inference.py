@@ -138,7 +138,7 @@ class Inference:
 
     def debug_draw_boxes(self, img, boxes ,color, thick):
         for box in boxes:
-            pts = [ max(0,int(v)) for v in box]
+            pts = [ min(max(0,int(v)), 640 if i==0 or i==2 else 480) for i,v in enumerate(box)]
             cv.rectangle(img,(pts[0],pts[1]),(pts[2],pts[3]),color,thick)
 
         
