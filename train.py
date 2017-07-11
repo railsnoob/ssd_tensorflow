@@ -169,7 +169,7 @@ class SSDTrain:
         matching_box_present_mask = np.array([])    
         matching_box_present_mask = tf.minimum(y_conf,1)
         matching_box_present_mask = tf.concat([y_conf,y_conf,y_conf,y_conf],1)
-        print("y_repdict_conf y_predict_conf.shape[1]*4",y_conf.shape[1],y_predict_conf.shape[1]*4)
+        print("y_predict_conf",y_conf.shape[1])
         print(matching_box_present_mask)
         # matching_box_present_mask = tf.reshape(matching_box_present_mask,[-1,y_predict_conf.shape[1]*4])
         
@@ -186,7 +186,6 @@ class SSDTrain:
         optimizer = tf.train.AdamOptimizer() # TODO allow changing initial learning_rate value
         training_operation = optimizer.minimize(total_loss)
         saver =  tf.train.Saver()
-        
         
         debug_stats = { "Conf-Loss-Before-Reduce-Sum" : Lconf2,
                         "dbg_num_conf_mask": dbg_num_conf_mask,
@@ -296,7 +295,6 @@ class SSDTrain:
                     end   = offset + batch_size
                     X_batch, y_batch_loc, y_batch_conf, n_matched_batch, y_conf_mask = self._batch_gen( start,end,batch_size,data,cfg.g("num_conf"),cfg.g("num_loc"),images_path)
                     
-                    print("EPOCH ==== ",epoch_i,"offset=",offset)
                     print(X_batch.shape, y_batch_loc.shape, y_batch_conf.shape, n_matched_batch, y_conf_mask.shape)
                 
                     _, lprinted, train_loss, debug_out  = sess.run([ training_operation, printed, total_loss, debug_stats],
@@ -308,6 +306,12 @@ class SSDTrain:
                     
                     epoch_train_losses.append(train_loss)
                     self.debug_output_vars(debug_out,train_loss,y_batch_loc,y_batch_conf,y_conf_mask) 
+
+                    print("EPOCH[",epoch_i,"] offset=[",offset,"] train_loss=",train_loss)
+                    # if (epoch_i >=1):
+                    #    for i in (EPOCH,0,-1):
+                    #        print(epoch_train_losses[len(epoch_train_losses)-1-(num_examples/batch_size)]) 
+                    # print("END ==== LOSSES")
                   
                     
                 epoch_train_loss = np.mean(epoch_train_losses)
