@@ -147,10 +147,9 @@ class SSDTrain:
         ## CREATE THE GRAPH
         y_predict_loc, y_predict_conf = self._net.graph(x)
         
-        y_predict_loc1 = y_predict_loc
-        y_predict_conf1 = y_predict_conf
+        y_predict_loc_initial = y_predict_loc
+        y_predict_conf_initial = y_predict_conf
     
-        dbg_num_conf_mask = y_predict_conf
         dbg_num_loc = y_predict_loc
         
         y_conf_loss_mask = tf.cast(y_conf_loss_mask,tf.float32)
@@ -184,20 +183,19 @@ class SSDTrain:
         Lbox_coords_before_sum = Lbox_coords # should have same coordinates as y_conf and n*4 non zero values
         Lbox_coords = tf.reduce_sum(Lbox_coords)
         # total_loss = (1/num_matched[0])*Lbox_coords + Lconf
-        total_loss = Lbox_coords + 1/10*Lconf
+        total_loss = 10*Lbox_coords + 1/10*Lconf
         optimizer = tf.train.AdamOptimizer() # TODO allow changing initial learning_rate value
         training_operation = optimizer.minimize(total_loss)
         saver =  tf.train.Saver()
         
         debug_stats = { "Conf-Loss-Before-Reduce-Sum" : Lconf2,
-                        "dbg_num_conf_mask": dbg_num_conf_mask,
                         "dbg_num_loc": dbg_num_loc,
                         "Lbox_coords_before_sum":Lbox_coords_before_sum,
                         "box_mask": matching_box_present_mask,
                         "Lbox_coords": Lbox_coords,
                         "Lconf": Lconf,
-                        "y_predict_conf1":y_predict_conf1,
-                        "y_predict_loc1":y_predict_loc1,
+                        "y_predict_conf_initial":y_predict_conf_initial,
+                        "y_predict_loc_initial":y_predict_loc_initial,
                         "y_predict_conf":y_predict_conf,
                         "loc_diff": loc_diff
 
@@ -246,8 +244,8 @@ class SSDTrain:
         print("Training LOSS = {} Lconf={} Lbox_coords={}".format(train_loss,
                                                                   debug_out["Lconf"],
                                                                   debug_out["Lbox_coords"]))
-        print("ypred1 shape={} yloc1 shape={}".format(debug_out["y_predict_conf1"].shape,
-                                                      debug_out["y_predict_loc1"].shape))
+        print("ypred_initial shape={} yloc_initial shape={}".format(debug_out["y_predict_conf_initial"].shape,
+                                                        debug_out["y_predict_loc_initial"].shape))
         self._print_stats2(y_batch_loc,"y_batch_loc")
         self._print_stats2(y_batch_conf,"y_batch_conf")
         self._print_stats2(y_conf_mask,"y_conf_mask")
@@ -270,6 +268,10 @@ class SSDTrain:
         saver, debug_stats, total_loss, training_operation = self._ssd_graph(x,y_loc,y_conf,num_matched,y_conf_loss_mask)
         
         printed                        = tf.Print(total_loss,[total_loss])
+
+
+        total_loss_summary  = tf.summary.scalar('Total Loss',total_loss)
+        file_writer         = tf.summary.FileWriter(self.cfg.g("run_dir"), tf.get_default_graph())
         
         # TODO This should go intot the dataset class
         data                = pickle.load(open(dirname+"/train.pkl","rb"))
@@ -293,7 +295,6 @@ class SSDTrain:
                 batch_size              = min(num_examples,batch_size)
                 
                 for offset in range(0,num_examples, batch_size):
-                    
                     start = offset
                     end   = offset + batch_size
                     X_batch, y_batch_loc, y_batch_conf, n_matched_batch, y_conf_mask = self._batch_gen( start,end,batch_size,data,cfg.g("num_conf"),cfg.g("num_loc"),images_path)
@@ -311,6 +312,16 @@ class SSDTrain:
                     self.debug_output_vars(debug_out,train_loss,y_batch_loc,y_batch_conf,y_conf_mask) 
 
                     print("EPOCH[",epoch_i,"] offset=[",offset,"] train_loss=",train_loss)
+
+
+                    if (offset//batch_size) % 5 == 0:
+                        summary_str = total_loss_summary.eval(feed_dict={x:X_batch,
+                                                                    y_conf:y_batch_conf,
+                                                                    y_loc:y_batch_loc,
+                                                                    num_matched:n_matched_batch,
+                                                                    y_conf_loss_mask:y_conf_mask})
+                        step = epoch_i*(num_examples//batch_size) + offset//batch_size
+                        file_writer.add_summary(summary_str, step)
                     # if (epoch_i >=1):
                     #    for i in (EPOCH,0,-1):
                     #        print(epoch_train_losses[len(epoch_train_losses)-1-(num_examples/batch_size)]) 
@@ -353,7 +364,8 @@ class SSDTrain:
     
         # This is just a placeholder cost
         cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=conf,labels=y))
-        optimizer = tf.train.AdamOptimizer().minimize(cost)
+        
+        optimizer = tf.train.AdamOptimizer(learning_rate=self.cfg.g("adam_learning_rate")).minimize(cost)
 
     
     def train_dataset(self):
