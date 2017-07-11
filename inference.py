@@ -55,6 +55,7 @@ class Inference:
     def convert_coordinates_to_boxes(self,loc,conf,probs):
         import numpy as np
         boxes = []
+        confs = []
         ii = 0 # index on the y_pred_conf
         print("LOC=",np.where(loc!=0.0) )
         print("CONF=",np.where(conf != 0.0) )
@@ -66,8 +67,9 @@ class Inference:
                             print("Detected at",feature_map_row, feature_map_col,"at featmap (",feat_map,")")
                             box = self.get_coordinates(loc[0][ii*4:ii*4+4],feat_map,feature_map_row,feature_map_col,default_box_scale)
                             boxes.append(box)
+                            confs.append([probs[0][ii],conf[0][ii]])
                         ii+=1
-        return boxes
+        return boxes, confs
 
 
     # accuracy
@@ -165,8 +167,10 @@ class Inference:
         for i in non_zero_indices:
             print(i,") location",p_loc[0][i*4:i*4+4],"probs", p_probs[0][i],"conf",p_conf[0][i])
     
-        boxes = self.convert_coordinates_to_boxes(p_loc,p_conf,p_probs)
-        print("BOXES=",boxes)
+        boxes, confs = self.convert_coordinates_to_boxes(p_loc,p_conf,p_probs)
+        print("Boxes")
+        for i,a in enumerate(zip(boxes,confs)):
+            print i,a
     
         boxes = non_max_suppression_fast(boxes,0.3)
         
