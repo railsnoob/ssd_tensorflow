@@ -176,13 +176,15 @@ class SSDTrain:
         matching_box_present_mask = tf.cast(matching_box_present_mask,tf.float32)
 
         print("matching_box_present_mask shape ====", matching_box_present_mask.shape,"y_loc.shape shape ====", matching_box_present_mask.shape)
-    
-        Lbox_coords = self._smooth_l1(y_loc - y_predict_loc)
+
+        loc_diff = y_loc - y_predict_loc
+        
+        Lbox_coords = self._smooth_l1(loc_diff)
         Lbox_coords = tf.multiply(matching_box_present_mask, Lbox_coords) # Y_conf will already be zero
         Lbox_coords_before_sum = Lbox_coords # should have same coordinates as y_conf and n*4 non zero values
         Lbox_coords = tf.reduce_sum(Lbox_coords)
         # total_loss = (1/num_matched[0])*Lbox_coords + Lconf
-        total_loss = Lbox_coords + Lconf
+        total_loss = Lbox_coords + 1/10*Lconf
         optimizer = tf.train.AdamOptimizer() # TODO allow changing initial learning_rate value
         training_operation = optimizer.minimize(total_loss)
         saver =  tf.train.Saver()
@@ -197,7 +199,7 @@ class SSDTrain:
                         "y_predict_conf1":y_predict_conf1,
                         "y_predict_loc1":y_predict_loc1,
                         "y_predict_conf":y_predict_conf,
-
+                        "loc_diff": loc_diff
 
         }
 
@@ -206,6 +208,7 @@ class SSDTrain:
     def _print_debug_stats(self,debug_out):
         print("OUTPUT VARS ==============================")
         self._print_stats2(debug_out["Conf-Loss-Before-Reduce-Sum"],"Conf Loss Before Reduce Sum")
+        self._print_stats2(debug_out["loc_diff"],"loc_diff")
         self._print_stats2(debug_out["y_predict_conf"],"y_predict_conf","gt")
         self._print_stats2(debug_out["dbg_num_loc"],"dbg_num_loc")
         self._print_stats2(debug_out["box_mask"],"box_mask")

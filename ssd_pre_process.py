@@ -214,6 +214,8 @@ class SSDPreProcess:
         train       = dict(train_items[ 0 : n ])
         val         = dict(train_items[ n : (n + max(n//5,1))])
         test        = dict((a,glist["test"][a]) for a in random.sample(list(glist["test"].keys()),total_test))
+
+        print(train_items)
         
         self.pre_process_and_write_images(train,self.cfg.g("dirname"),"train")
         self.pre_process_and_write_images(val,self.cfg.g("dirname"),"val")
