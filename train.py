@@ -229,7 +229,7 @@ class SSDTrain:
     
     def debug_output_vars(self,debug_out,train_loss,y_batch_loc,y_batch_conf,y_conf_mask,n_matched):
         
-        print("[{}] Training LOSS = {} Lconf={} Lbox_coords={}".format(n_matched,
+        print("\n\n\n[{}] Training LOSS = {} Lconf={} Lbox_coords={}".format(n_matched,
                                                                         train_loss,
                                                                         debug_out["Lconf"],
                                                                         debug_out["Lbox_coords"]))
