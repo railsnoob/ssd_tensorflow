@@ -201,6 +201,9 @@ adam_learning_rate: 0.001
 8. [DONE] Train the system on pedestrian dataset.
 9. [DONE] Add Alex Net
 10. [DONE] Add support for PASCAL VOC person dataset.
+9. [DONE] Add batch normalization
+9. [1/2 DONE] Move logging to tensorboard
+9. Add agumentation
 9. Experiment with different feature map sizes (skinny is better I think.)
 10. [DONE] Run predictions from test set to show system is working.
 11. Experiment with different sizes to see if it varies the accuracy. Randomized grid search?
