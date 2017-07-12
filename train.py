@@ -332,7 +332,7 @@ class SSDTrain:
                 epoch_train_loss = np.mean(epoch_train_losses)
                 all_training_losses.append([epoch_i,epoch_train_loss])
                 pickle.dump(all_training_losses, open(cfg.g("run_dir")+"/train_losses_till_epoch-"+str(epoch_i),"wb"))
-
+        
                 if (epoch_i % 5 == 0):
                     # After every 5 epochs we can calculate validation loss & accuracy (TODO).
                     epoch_validation_loss = self._calc_validation_losses(sess, epoch_i,epoch_train_loss,batch_size,valid_data,x,y_conf,y_loc,num_matched, y_conf_loss_mask, total_loss)
@@ -343,7 +343,9 @@ class SSDTrain:
                                                                                  str(epoch_validation_loss),
                                                                                  str(epoch_train_loss),
                                                                                  str(epoch_i)))
-
+                if train_loss == 0.0:
+                    print("BREAKING EARLY")
+                    break
             saver.save(sess,cfg.g("run_dir")+"/final-model")
             file_writer.close()
 
