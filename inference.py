@@ -32,7 +32,7 @@ class Inference:
     def get_coordinates(self,norm_box,feat_map,row_i,col_i,default_box_scale):
         """ Convert from normalized predictions to picture coordinates """
         import numpy as np
-    
+
         ## TODO This could be a bug ... Mixing up Width and Height
         cell_w = self.cfg.g("image_width")/feat_map[0]
         cell_h = self.cfg.g("image_height")/feat_map[1]
@@ -65,7 +65,9 @@ class Inference:
                     for default_box_scale in self.cfg.g("default_box_scales"):
                         if probs[0][ii] > self.cfg.g("pred_conf_threshold") and conf[0][ii] > 0.0:
                             print("Detected at",feature_map_row, feature_map_col,"at featmap (",feat_map,")")
+                            print("LOC=",loc[0][ii*4:ii*4+4],"feat_map=",feat_map,"[{},{}]".format(feature_map_row,feature_map_col),"defbox=",default_box_scale)
                             box = self.get_coordinates(loc[0][ii*4:ii*4+4],feat_map,feature_map_row,feature_map_col,default_box_scale)
+                            print("   Out=",box)
                             boxes.append(box)
                             confs.append([probs[0][ii],conf[0][ii]])
                         ii+=1
