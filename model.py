@@ -14,7 +14,7 @@ class BaseNet:
         self.num_classes = num_classes
         pass
 
-    def conv_layer_optional_pooling(self, x_tensor,n_outputs,n_ksize,n_strides,name,
+    def conv_layer_optional_pooling(self, x_tensor,n_outputs,n_ksize,n_strides,name,phase,
                                     padding_type="VALID",pool_ksize=None,pool_strides=None,pool_name=None):
         # Convolution layer with Relu 
         """
@@ -41,7 +41,14 @@ class BaseNet:
     
         conv_layer = tf.nn.conv2d(x_tensor,filter_weight,[1]+list(n_strides)+[1],padding_type,name=name)
         conv_layer = tf.nn.bias_add(conv_layer,filter_bias)
-        conv_layer = tf.nn.relu(conv_layer)
+
+        # Add batch normalization
+        
+        h1 = tf.contrib.layers.batch_norm(conv_layer,center=True, scale=True,
+                                          is_training = phase)
+                                          
+        
+        conv_layer = tf.nn.relu(h1)
 
         print(name,conv_layer.shape)
     
@@ -71,14 +78,14 @@ class BaseNet:
         layer = tf.nn.relu(layer)
         return layer
     
-    def convolve_and_collect(self,fmap,name,y_box_coords,y_class):
+    def convolve_and_collect(self,fmap,name,y_box_coords,y_class,phase):
         # Apply 2 convolutions and get predictions for coordinates and classes and store them 
         # Get both of these guys and convolve
-        b = self.conv_layer_optional_pooling(fmap,4*self.num_default_boxes,(3,3),(1,1),name+"box_coords",padding_type="SAME")
+        b = self.conv_layer_optional_pooling(fmap,4*self.num_default_boxes,(3,3),(1,1),name+"box_coords",phase,padding_type="SAME")
         print("   =====> ",name+"box_coords",self.flatten(b))
         y_box_coords.insert(0,flatten(b))
     
-        c = self.conv_layer_optional_pooling(fmap,self.num_classes*self.num_default_boxes,(3,3),(1,1),name+"class",padding_type="SAME")
+        c = self.conv_layer_optional_pooling(fmap,self.num_classes*self.num_default_boxes,(3,3),(1,1),name+"class",phase,padding_type="SAME")
         print("   =====> ",name+"class",self.flatten(c))
         y_class.insert(0,flatten(c))
 

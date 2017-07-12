@@ -143,9 +143,9 @@ class SSDTrain:
     def _smooth_l1(self,x):
         return tf.where( tf.less_equal(tf.abs(x),1.0), 0.5*x*x,  tf.abs(x) - 0.5)
     
-    def _ssd_graph(self,x,y_loc,y_conf,num_matched,y_conf_loss_mask):
+    def _ssd_graph(self,x,y_loc,y_conf,num_matched,y_conf_loss_mask,phase):
         ## CREATE THE GRAPH
-        y_predict_loc, y_predict_conf = self._net.graph(x)
+        y_predict_loc, y_predict_conf = self._net.graph(x,phase)
 
         # Stricly Debugging purposes
         y_predict_loc_initial = y_predict_loc
@@ -179,8 +179,12 @@ class SSDTrain:
         Lbox_coords_before_sum = Lbox_coords # should have same coordinates as y_conf and n*4 non zero values
         Lbox_coords = tf.reduce_sum(Lbox_coords)
         total_loss = 10*Lbox_coords + 1/10*Lconf
-        optimizer = tf.train.AdamOptimizer(learning_rate=self.cfg.g("adam_learning_rate")) 
-        training_operation = optimizer.minimize(total_loss)
+        optimizer = tf.train.AdamOptimizer(learning_rate=self.cfg.g("adam_learning_rate"))
+
+        extra_update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+        
+        with tf.control_dependencies(extra_update_ops): 
+            training_operation = optimizer.minimize(total_loss)
         
         saver =  tf.train.Saver()
         
@@ -199,7 +203,7 @@ class SSDTrain:
         return saver, debug_stats, total_loss,training_operation
 
 
-    def _calc_validation_losses(self, sess, epoch_i, train_loss,batch_size,valid_data,x,y_conf,y_loc,num_matched, y_conf_loss_mask, total_loss):
+    def _calc_validation_losses(self, sess, epoch_i, train_loss,batch_size,valid_data,x,y_conf,y_loc,num_matched, y_conf_loss_mask, total_loss,phase):
 
         num_valid_samples       = self._len_data(self.dirname, "val")
         batch_size              = min(num_valid_samples,batch_size)
@@ -214,7 +218,7 @@ class SSDTrain:
                                                                 y_conf     : y_valid_batch_conf,
                                                                 y_loc      : y_valid_batch_loc,
                                                                 num_matched: n_valid_matched_batch,
-                                                                y_conf_loss_mask:y_valid_conf_mask})
+                                                                y_conf_loss_mask:y_valid_conf_mask,phase:0})
             epoch_validation_losses.append(validation_loss)
 
         print("============")
@@ -261,6 +265,7 @@ class SSDTrain:
 
         dirname = self.cfg.g("dirname")
         ## INITIALIZATION
+        phase            = tf.placeholder(tf.bool,name='phase') # Whether training or not
         x                = tf.placeholder(tf.float32,(None, cfg.g("image_height"),
                                                       cfg.g("image_width"), cfg.g("n_channels")),name="x")
         y_loc            = tf.placeholder(tf.float32,(None,cfg.g("num_loc")),name="y_loc")
@@ -268,7 +273,7 @@ class SSDTrain:
         num_matched      = tf.placeholder(tf.int32,(None,1),name="num_matched")
         y_conf_loss_mask = tf.placeholder(tf.int32,(None,cfg.g("num_conf")),name="y_conf_loss_mask")
 
-        saver, debug_stats, total_loss, training_operation = self._ssd_graph(x,y_loc,y_conf,num_matched,y_conf_loss_mask)
+        saver, debug_stats, total_loss, training_operation = self._ssd_graph(x,y_loc,y_conf,num_matched,y_conf_loss_mask,phase)
         
         printed                        = tf.Print(total_loss,[total_loss])
 
@@ -308,7 +313,7 @@ class SSDTrain:
                                                                     y_conf:y_batch_conf,
                                                                     y_loc:y_batch_loc,
                                                                     num_matched:n_matched_batch,
-                                                                    y_conf_loss_mask:y_conf_mask})
+                                                                    y_conf_loss_mask:y_conf_mask,phase:1})
                     
                     epoch_train_losses.append(train_loss)
                     self.debug_output_vars(debug_out,train_loss,y_batch_loc,y_batch_conf,y_conf_mask,n_matched_batch) 
@@ -320,7 +325,7 @@ class SSDTrain:
                                                                     y_conf:y_batch_conf,
                                                                     y_loc:y_batch_loc,
                                                                     num_matched:n_matched_batch,
-                                                                    y_conf_loss_mask:y_conf_mask})
+                                                                    y_conf_loss_mask:y_conf_mask,phase:0})
                         step = epoch_i*(num_examples//batch_size) + offset//batch_size
                         file_writer.add_summary(summary_str, step)
                     # if (epoch_i >=1):
@@ -335,7 +340,7 @@ class SSDTrain:
         
                 if (epoch_i % 5 == 0):
                     # After every 5 epochs we can calculate validation loss & accuracy (TODO).
-                    epoch_validation_loss = self._calc_validation_losses(sess, epoch_i,epoch_train_loss,batch_size,valid_data,x,y_conf,y_loc,num_matched, y_conf_loss_mask, total_loss)
+                    epoch_validation_loss = self._calc_validation_losses(sess, epoch_i,epoch_train_loss,batch_size,valid_data,x,y_conf,y_loc,num_matched, y_conf_loss_mask, total_loss,phase)
                     epoch_train_loss      = np.mean(epoch_train_losses)
                     cumulative_losses.append([epoch_i,epoch_train_loss,epoch_validation_loss])
                     pickle.dump(cumulative_losses, open(cfg.g("run_dir")+"/cumulative_losses_till_epoch-"+str(epoch_i),"wb"))

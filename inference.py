@@ -92,6 +92,7 @@ class Inference:
             x            = tf.get_default_graph().get_tensor_by_name("x:0")
             y_pred_conf  = tf.get_default_graph().get_tensor_by_name("y_predict_conf:0")
             y_pred_loc   = tf.get_default_graph().get_tensor_by_name("y_predict_loc:0")
+            phase        = tf.get_default_graph().get_tensor_by_name("phase:0")
     
             img          = mpimg.imread(self.cfg.g("images_path")+"/" +image_name)
             
@@ -103,7 +104,7 @@ class Inference:
             print("run_inference():imp.shape=",img.shape)
         
             batched_img         = np.reshape(img, [-1,self.cfg.g("image_height"),self.cfg.g("image_width"),self.cfg.g("n_channels")])
-            fdict               = {x:batched_img}
+            fdict               = {x:batched_img,phase:0}
 
             y_pred_conf_tmp     = tf.reshape(y_pred_conf,[-1,self.cfg.g("num_preds"),2])
             all_probabilities   = tf.nn.softmax(y_pred_conf_tmp)
