@@ -242,12 +242,11 @@ class SSDTrain:
         self._print_stats2(debug_out["y_predict_conf"],"y_predict_conf","gt")
         self._print_stats2(debug_out["cross_entropy_with_logits"],"cross_entropy_with_logits")
         self._print_stats2(debug_out["Conf-Loss-Before-Reduce-Sum"],"Conf Loss Before Reduce Sum")
-
+        
         print("//INTERMEDIATE VARIABLES - LOC ")
         self._print_stats2(debug_out["box_mask"],"box_mask")
         self._print_stats2(debug_out["loc_diff"],"loc_diff")
         self._print_stats2(debug_out["Lbox_coords_before_sum"],"Lbox_coords_before_sum")
-        self._print_stats2(debug_out["Lbox_coords"],"Lbox_coords")
         
         print("//GROUND TRUTH ")
         self._print_stats2(y_batch_loc,"y_batch_loc")
