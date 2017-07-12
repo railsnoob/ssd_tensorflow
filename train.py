@@ -146,11 +146,10 @@ class SSDTrain:
     def _ssd_graph(self,x,y_loc,y_conf,num_matched,y_conf_loss_mask):
         ## CREATE THE GRAPH
         y_predict_loc, y_predict_conf = self._net.graph(x)
-        
+
+        # Stricly Debugging purposes
         y_predict_loc_initial = y_predict_loc
         y_predict_conf_initial = y_predict_conf
-    
-        dbg_num_loc = y_predict_loc
         
         y_conf_loss_mask = tf.cast(y_conf_loss_mask,tf.float32)
         
@@ -187,7 +186,6 @@ class SSDTrain:
         
         debug_stats = { "cross_entropy_with_logits": cross_entropy_with_logits,
                         "Conf-Loss-Before-Reduce-Sum" : conf_loss_arr,
-                        "dbg_num_loc": dbg_num_loc,
                         "Lbox_coords_before_sum":Lbox_coords_before_sum,
                         "box_mask": matching_box_present_mask,
                         "Lbox_coords": Lbox_coords,
@@ -196,19 +194,10 @@ class SSDTrain:
                         "y_predict_loc_initial":y_predict_loc_initial,
                         "y_predict_conf":y_predict_conf,
                         "loc_diff": loc_diff
-
         }
 
         return saver, debug_stats, total_loss,training_operation
 
-    def _print_debug_stats(self,debug_out):
-        print("OUTPUT VARS ==============================")
-        self._print_stats2(debug_out["Conf-Loss-Before-Reduce-Sum"],"Conf Loss Before Reduce Sum")
-        self._print_stats2(debug_out["loc_diff"],"loc_diff")
-        self._print_stats2(debug_out["y_predict_conf"],"y_predict_conf","gt")
-        self._print_stats2(debug_out["dbg_num_loc"],"dbg_num_loc")
-        self._print_stats2(debug_out["box_mask"],"box_mask")
-        self._print_stats2(debug_out["Lbox_coords_before_sum"],"Lbox_coords_before_sum")
 
     def _calc_validation_losses(self, sess, epoch_i, train_loss,batch_size,valid_data,x,y_conf,y_loc,num_matched, y_conf_loss_mask, total_loss):
 
@@ -238,16 +227,34 @@ class SSDTrain:
 
     
     
-    def debug_output_vars(self,debug_out,train_loss,y_batch_loc,y_batch_conf,y_conf_mask):
-        print("Training LOSS = {} Lconf={} Lbox_coords={}".format(train_loss,
-                                                                  debug_out["Lconf"],
-                                                                  debug_out["Lbox_coords"]))
-        print("ypred_initial shape={} yloc_initial shape={}".format(debug_out["y_predict_conf_initial"].shape,
-                                                        debug_out["y_predict_loc_initial"].shape))
+    def debug_output_vars(self,debug_out,train_loss,y_batch_loc,y_batch_conf,y_conf_mask,n_matched):
+        
+        print("[{}] Training LOSS = {} Lconf={} Lbox_coords={}".format(n_matched,
+                                                                        train_loss,
+                                                                        debug_out["Lconf"],
+                                                                        debug_out["Lbox_coords"]))
+
+        self._print_stats2(debug_out["y_predict_conf_initial"],"y_predict_conf_initial")
+        self._print_stats2(debug_out["y_predict_loc_initial"],"y_predict_loc_initial")
+        self._print_stats2(y_conf_mask,"y_conf_mask")
+
+        print("//INTERMEDIATE VARIABLES - CONF ")
+        self._print_stats2(debug_out["y_predict_conf"],"y_predict_conf","gt")
+        self._print_stats2(debug_out["cross_entropy_with_logits"],"cross_entropy_with_logits")
+        self._print_stats2(debug_out["Conf-Loss-Before-Reduce-Sum"],"Conf Loss Before Reduce Sum")
+        self._print_stats2(debug_out["Lconf"],"Lconf")
+
+        print("//INTERMEDIATE VARIABLES - LOC ")
+        self._print_stats2(debug_out["box_mask"],"box_mask")
+        self._print_stats2(debug_out["loc_diff"],"loc_diff")
+        self._print_stats2(debug_out["Lbox_coords_before_sum"],"Lbox_coords_before_sum")
+        self._print_stats2(debug_out["Lbox_coords"],"Lbox_coords")
+        
+        print("//GROUND TRUTH ")
         self._print_stats2(y_batch_loc,"y_batch_loc")
         self._print_stats2(y_batch_conf,"y_batch_conf")
-        self._print_stats2(y_conf_mask,"y_conf_mask")
-        self._print_debug_stats(debug_out)
+
+        
 
     def train_the_net(self):
         # Setup the loss for the coordinates and the bl
@@ -284,7 +291,6 @@ class SSDTrain:
         with tf.Session() as sess:
             sess.run(tf.global_variables_initializer())
             num_examples = self._len_data(dirname,"train")
-            print("\n\n\n\n Number of images",num_examples)
 
             for epoch_i in range(self.cfg.g("num_epochs")):
 
@@ -307,7 +313,7 @@ class SSDTrain:
                                                                     y_conf_loss_mask:y_conf_mask})
                     
                     epoch_train_losses.append(train_loss)
-                    self.debug_output_vars(debug_out,train_loss,y_batch_loc,y_batch_conf,y_conf_mask) 
+                    self.debug_output_vars(debug_out,train_loss,y_batch_loc,y_batch_conf,y_conf_mask,n_matched_batch) 
 
                     print("EPOCH[",epoch_i,"] index=[",offset//batch_size,"] offset=[",offset,"] batch_size=[",batch_size,"] train_loss=",train_loss)
 

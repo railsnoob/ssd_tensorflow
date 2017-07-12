@@ -1,8 +1,10 @@
 import pickle
 import unittest
 from inference import Inference
-import matplotlib.pylot as plt
+import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+import numpy as np
+
 
 def debug_draw_boxes(img, boxes ,color, thick):
     for box in boxes:
