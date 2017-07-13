@@ -94,10 +94,9 @@ The inference class will pull an image from your test set and show you a predict
 # Experimental Results So Far
 I've trained the system with VGG16 using 3000 images from the Caltech Pedestrian Detection dataset. This took 2 days of running on AWS gpu.large instance. There are still a lot of false positives being created by the system. 
 
-The plan is to add batch_normalization, add a multiplication factor to the localization loss as its much smaller than the the confindence loss and all add tensorboard when I get some time. 
+After adding batch_normalization and adding a multiplication factor to the localization loss (as its much smaller than the the confindence loss) the weights seem to be much smaller. Waiting for a pause in my job search to rebuild the model. 
 
-# Training & Validation loss plots over **100 epochs** with batch_size=16 and 3000 images with at least 1 ground truth box.
-# ![Loss After 100 EPOCHS](https://raw.githubusercontent.com/railsnoob/ssd_tensorflow/master/docs/ssd_loss.png)
+
 
 
 ## Sample Detection
