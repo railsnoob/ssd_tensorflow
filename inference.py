@@ -59,12 +59,14 @@ class Inference:
         ii = 0 # index on the y_pred_conf
         print("LOC=",np.where(loc!=0.0) )
         print("CONF=",np.where(conf != 0.0) )
+        cell_counter = 0
         for feat_map in self.cfg.g("feature_maps"):
             for feature_map_row in range(feat_map[0]):
                 for feature_map_col in range(feat_map[1]):
+                    cell_counter += 1 
                     for default_box_scale in self.cfg.g("default_box_scales"):
                         if probs[0][ii] > self.cfg.g("pred_conf_threshold") and conf[0][ii] > 0.0:
-                            print("Detected at",feature_map_row, feature_map_col,"at featmap (",feat_map,")")
+                            print("[",cell_counter,"] Detected at",feature_map_row, feature_map_col,"at featmap (",feat_map,")")
                             print("LOC=",loc[0][ii*4:ii*4+4],"feat_map=",feat_map,"[{},{}]".format(feature_map_row,feature_map_col),"defbox=",default_box_scale)
                             box = self.get_coordinates(loc[0][ii*4:ii*4+4],feat_map,feature_map_row,feature_map_col,default_box_scale)
                             print("   Out=",box)

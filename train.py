@@ -31,8 +31,9 @@ class SSDTrain:
     def _get_yconf_mask(self, y_conf, y_loc, n_matched):
         """
         We only use neg_pos_ratio times the number of positive gt matches.
-        This is not needed for y_loc as y_loc losses are only for matched default boxes that match ground_truth box
-        yconf_mask will contain a 1 for a data point that we will use and 0 for one that we will not. 
+        This is not needed for y_loc as y_loc losses are only for matched default boxes that match ground_truth boxes.
+        yconf_mask will contain a 1 for a data point that we will use and 0 for one that we will not.
+        
         Args
         y_conf = array of confidences
         y_loc  = array of location
@@ -178,7 +179,8 @@ class SSDTrain:
         Lbox_coords = tf.multiply(matching_box_present_mask, Lbox_coords) # Y_conf will already be zero
         Lbox_coords_before_sum = Lbox_coords # should have same coordinates as y_conf and n*4 non zero values
         Lbox_coords = tf.reduce_sum(Lbox_coords)
-        total_loss = 10*Lbox_coords + 1/10*Lconf
+        # total_loss = 10*Lbox_coords + 1/10*Lconf
+        total_loss = Lbox_coords + Lconf
         optimizer = tf.train.AdamOptimizer(learning_rate=self.cfg.g("adam_learning_rate"))
 
         extra_update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
