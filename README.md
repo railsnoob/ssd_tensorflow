@@ -99,8 +99,10 @@ After adding batch_normalization and adding a multiplication factor to the local
 
 
 
-## Sample Detection
-![Sample Detection](https://raw.githubusercontent.com/railsnoob/ssd_tensorflow/master/docs/working-prediction.png)
+## Sample Detections
+![Sample Detection 2](https://raw.githubusercontent.com/railsnoob/ssd_tensorflow/master/docs/ped_detect_1.png)
+![Sample Detection 3](https://raw.githubusercontent.com/railsnoob/ssd_tensorflow/master/docs/ped_detect_2.png)
+![Sample Detection 4](https://raw.githubusercontent.com/railsnoob/ssd_tensorflow/master/docs/working-prediction.png)
 
 # Future Work
 1. Further train the VGG16 model with the Stanford Pedestrian dataset for 100 more epochs.
